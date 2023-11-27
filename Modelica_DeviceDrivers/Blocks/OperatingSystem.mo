@@ -4,7 +4,7 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
 
   block RealtimeSynchronize "Block for pseudo real-time synchronization. Supersedes \"SynchronizeRealtime\"."
     extends Modelica_DeviceDrivers.Utilities.Icons.BaseIcon;
-    import SI = Modelica.SIunits;
+    import      Modelica.Units.SI;
 
     input Real scaling(min=0) = 1 "real-time scaling factor; > 1 means the simulation is made slower than real-time" annotation(Dialog(enable=true, group="Time varying input signal"));
 
@@ -43,12 +43,12 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
       final startTime=startTime) if sampled and enable
       annotation (Placement(transformation(extent={{-60,-60},{-40,-40}})));
 
-    Modelica.Blocks.Sources.RealExpression dummyOutputs[4](y={0,0,0,0}) if
-                                                                 not enable
+    Modelica.Blocks.Sources.RealExpression dummyOutputs[4](y={0,0,0,0})
+                                                              if not enable
       annotation (Placement(transformation(extent={{-20,70},{0,90}})));
-    Modelica.Blocks.Routing.Multiplex4 mux_continuous if     not sampled and enable
+    Modelica.Blocks.Routing.Multiplex4 mux_continuous     if not sampled and enable
       annotation (Placement(transformation(extent={{-20,20},{0,40}})));
-    Modelica.Blocks.Routing.Multiplex4 mux_sampled if     sampled and enable
+    Modelica.Blocks.Routing.Multiplex4 mux_sampled     if sampled and enable
       annotation (Placement(transformation(extent={{-20,-60},{0,-40}})));
     Modelica.Blocks.Routing.DeMultiplex4 demux
       annotation (Placement(transformation(extent={{20,-10},{40,10}})));
@@ -95,10 +95,7 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
             lineColor={175,175,175}), Text(
             visible=not enable,
             extent={{-100,-112},{100,-136}},
-            lineColor={135,135,135},
-            pattern=LinePattern.Dash,
-            fillColor={255,255,255},
-            fillPattern=FillPattern.Solid,
+            textColor={135,135,135},
             textString="Deactivated"),
           Bitmap(extent={{-60,-60},{60,60}}, fileName="modelica://Modelica_DeviceDrivers/Resources/Images/Icons/clock.png"),
           Text(extent={{-150,142},{150,102}}, textString="%name"),
@@ -150,7 +147,7 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
 <p>Typically, this block will be used together with the <a href=\"modelica://Modelica_DeviceDrivers.Blocks.OperatingSystem.RealtimeSynchronize\">RealtimeSynchronize</a> block for improving the real-time performance.</p>
 </html>"), Icon(graphics={
           Text(extent={{-100,20},{100,-20}},
-            lineColor={0,0,0},
+            textColor={0,0,0},
             textString="%priority"),
           Text(extent={{-150,142},{150,102}}, textString="%name")}));
   end ProcessPriority;
@@ -158,7 +155,8 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
   block RandomRealSource
     extends Modelica_DeviceDrivers.Utilities.Icons.BaseIcon;
     parameter Integer n=1 "Dimension of output vector";
-    parameter Modelica.SIunits.Period sampleTime = 0.01 "Sample time of random number generation";
+    parameter Modelica.Units.SI.Period sampleTime=0.01
+      "Sample time of random number generation";
     input Real minValue[n]=fill(0,n) "Minimum value of random output" annotation(Dialog(enable=true));
     input Real maxValue[n]=fill(1,n) "Maximum value of random output" annotation(Dialog(enable=true));
 
@@ -191,17 +189,15 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
             pattern=LinePattern.Dash),
           Text(
             extent={{-100,62},{-72,46}},
-            lineColor={135,135,135},
-            pattern=LinePattern.Dash,
+            textColor={135,135,135},
             textString="max"),
           Text(
             extent={{-100,-44},{-72,-60}},
-            lineColor={135,135,135},
-            pattern=LinePattern.Dash,
+            textColor={135,135,135},
             textString="min"),
           Text(
             extent={{-100,140},{100,100}},
-            lineColor={0,0,255},
+            textColor={0,0,255},
             textString="%name")}),
       Documentation(info="<html>
 <p>Uses the <code>rand()</code>function from the C standard library for creating pseudo-random numbers. The computers real-time clock is used to obtain seed values for the sequence of pseudo-random numbers.</p>
@@ -252,8 +248,9 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
     Modelica.Blocks.Interfaces.RealInput scaling if enableRealTimeScaling
       "Real-time scaling factor; > 1 means the simulation is made slower than real-time"
       annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
-    output Modelica.SIunits.Time calculationTime "Time needed for calculation";
-    output Modelica.SIunits.Time availableTime "Time available for calculation (integrator step size)";
+    output Modelica.Units.SI.Time calculationTime "Time needed for calculation";
+    output Modelica.Units.SI.Time availableTime
+      "Time available for calculation (integrator step size)";
   protected
     ProcessPriority procPrio(final priority = priority) if setPriority;
     Real dummyState(start = 0, fixed=true) "dummy state to be integrated, to force synchronization in every integration step";
@@ -320,7 +317,8 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
 
     partial block PartialRealtimeSynchronize
       "An improved block for real-time synchronization. Common interface definitions."
-      import Modelica.SIunits;
+      import SIunits =
+             Modelica.Units.SI;
       input Real scaling(min=0) = 1 "real-time scaling factor; > 1 means the simulation is made slower than real-time" annotation(Dialog(enable=true));
       parameter Boolean showAdvancedOutputs = true "Show output for computing time and remaining time"  annotation (Dialog(group="Advanced"), choices(checkBox=true));
       parameter Boolean shouldCatchupTime = false "true, try to catch up delays from missed dead-lines by progressing faster than real-time, otherwise do not" annotation (Dialog(group="Advanced"), choices(checkBox=true));
@@ -347,7 +345,8 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
     block RealtimeSynchronize_Continuous
       "An improved block for real-time synchronization. Continuous case."
       extends Modelica_DeviceDrivers.Utilities.Icons.BaseIcon;
-      extends Modelica_DeviceDrivers.Blocks.OperatingSystem.Internal.PartialRealtimeSynchronize;
+      extends
+        Modelica_DeviceDrivers.Blocks.OperatingSystem.Internal.PartialRealtimeSynchronize;
     // protected
     //   Real dummyState(start = 0, fixed=true) "Dummy state to be integrated, to force synchronization in every integration step"; // FIXME: Do we need this?
     equation
@@ -359,7 +358,7 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
       annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Text(
               extent={{-86,32},{88,-30}},
-              lineColor={28,108,200},
+              textColor={28,108,200},
               textString="Continuous")}),                            Diagram(
             coordinateSystem(preserveAspectRatio=false)));
     end RealtimeSynchronize_Continuous;
@@ -367,8 +366,10 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
     block RealtimeSynchronize_Sampled
       "An improved block for real-time synchronization. Sampled Cased."
       extends Modelica_DeviceDrivers.Utilities.Icons.BaseIcon;
-      extends Modelica_DeviceDrivers.Blocks.OperatingSystem.Internal.PartialRealtimeSynchronize;
-      extends Modelica_DeviceDrivers.Blocks.Communication.Internal.PartialSampleTrigger;
+      extends
+        Modelica_DeviceDrivers.Blocks.OperatingSystem.Internal.PartialRealtimeSynchronize;
+      extends
+        Modelica_DeviceDrivers.Blocks.Communication.Internal.PartialSampleTrigger;
     equation
 
       when actTrigger then
@@ -380,10 +381,9 @@ package OperatingSystem "Blocks for miscellaneous OS API related facilities, e.g
       annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Text(
               extent={{-88,28},{92,-30}},
-              lineColor={28,108,200},
+              textColor={28,108,200},
               textString="Sampled")}),                               Diagram(
             coordinateSystem(preserveAspectRatio=false)));
     end RealtimeSynchronize_Sampled;
   end Internal;
-
 end OperatingSystem;

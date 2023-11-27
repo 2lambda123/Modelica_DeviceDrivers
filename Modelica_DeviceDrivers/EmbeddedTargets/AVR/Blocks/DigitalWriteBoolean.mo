@@ -3,7 +3,8 @@ model DigitalWriteBoolean
   extends .Modelica.Blocks.Interfaces.partialBooleanSI;
   import Modelica_DeviceDrivers.EmbeddedTargets.AVR.Functions;
   import Modelica_DeviceDrivers.EmbeddedTargets.AVR.Types;
-  import Modelica.SIunits;
+  import SIunits =
+         Modelica.Units.SI;
   constant Types.Port port annotation(Dialog(
     enable = true,
     tab = "General",
@@ -16,5 +17,5 @@ protected
   Functions.Digital.InitWrite digital = Functions.Digital.InitWrite(port, pin);
 algorithm
   Functions.Digital.write(digital, pin, u);
-annotation(Icon(graphics = {Text(extent = {{-95, -95}, {95, 95}}, textString = "Digital %port%pin", fontName = "Arial")}));
+annotation(Icon(graphics={  Text(extent = {{-95, -95}, {95, 95}}, textString = "Digital %port%pin", fontName = "Arial")}));
 end DigitalWriteBoolean;

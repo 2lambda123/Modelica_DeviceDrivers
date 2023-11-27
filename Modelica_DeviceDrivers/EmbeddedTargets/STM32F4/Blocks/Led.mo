@@ -4,7 +4,8 @@ model Led
   import Modelica_DeviceDrivers.EmbeddedTargets.STM32F4.Functions;
   import Modelica_DeviceDrivers.EmbeddedTargets.STM32F4.Functions.HAL;
   import Modelica_DeviceDrivers.EmbeddedTargets.STM32F4.Types;
-  import Modelica.SIunits;
+  import SIunits =
+         Modelica.Units.SI;
   constant HAL.Init handle annotation(Dialog(
     enable = true,
     tab = "General",
@@ -23,7 +24,7 @@ algorithm
   Functions.Digital.ledOut(digital, u);
 annotation(Icon(graphics={               Text(extent={{-150,144},{150,104}},
             textString="%name"),           Text(extent={{-218,-106},{226,-136}},
-          lineColor={0,0,0},
+          textColor={0,0,0},
           textString="LED: %led"),
         Bitmap(origin = {-5, 1}, extent = {{-25, -65}, {33, 59}}, fileName=
               "modelica://Modelica_DeviceDrivers/Resources/Images/Icons/led-lamp-red-on.png")}));

@@ -5,7 +5,8 @@ package InputDevices "Blocks for input devices, such as keyboard, gamecontroller
     "Joystick input implementation for interactive simulations"
     extends Modelica_DeviceDrivers.Utilities.Icons.BaseIcon;
     import Modelica_DeviceDrivers.InputDevices.GameController;
-    parameter Modelica.SIunits.Period sampleTime = 0.01 "sample time for input update";
+    parameter Modelica.Units.SI.Period sampleTime=0.01
+      "sample time for input update";
     parameter Real gain[6] = ones(6) "gain of axis output";
     parameter Integer ID= 0
       "ID number of the joystick (0 = first joystick attached to the system)";
@@ -39,7 +40,8 @@ package InputDevices "Blocks for input devices, such as keyboard, gamecontroller
   block KeyboardKeyInput
     "Keyboard input implementation for interactive simulations"
     extends Modelica_DeviceDrivers.Utilities.Icons.BaseIcon;
-    parameter Modelica.SIunits.Period sampleTime=0.01 "sample time for input update";
+    parameter Modelica.Units.SI.Period sampleTime=0.01
+      "sample time for input update";
     parameter Modelica_DeviceDrivers.Blocks.InputDevices.Types.keyCodes keyCode="Return"
       "Monitored Key";
     parameter Boolean useKeyKombination=false
@@ -135,9 +137,7 @@ package InputDevices "Blocks for input devices, such as keyboard, gamecontroller
             fillPattern=FillPattern.Solid),
           Text(
             extent={{100,-12},{164,-38}},
-            lineColor={95,95,95},
-            fillColor={95,95,95},
-            fillPattern=FillPattern.Solid,
+            textColor={95,95,95},
             textString="keyState"),
           Polygon(
             points={{-80,80},{80,80},{60,78},{-60,78},{-80,80}},
@@ -147,10 +147,7 @@ package InputDevices "Blocks for input devices, such as keyboard, gamecontroller
             fillPattern=FillPattern.Solid),
           Text(
             extent={{-100,20},{100,-20}},
-            lineColor={0,0,255},
-            pattern=LinePattern.None,
-            fillColor={236,236,236},
-            fillPattern=FillPattern.Solid,
+            textColor={0,0,255},
             textString="%keyCode")}),
       preferredView="info",
       Documentation(info="<html> This block reads data from the keyboard. The monitored key is selected via the parameter <b>keyCode</b>.
@@ -161,7 +158,8 @@ package InputDevices "Blocks for input devices, such as keyboard, gamecontroller
   block SpaceMouseInput
     "SpaceMouse input implementation for interactive simulations"
     extends Modelica_DeviceDrivers.Utilities.Icons.BaseIcon;
-    parameter Modelica.SIunits.Period sampleTime = 0.01 "sample time for input update";
+    parameter Modelica.Units.SI.Period sampleTime=0.01
+      "sample time for input update";
     parameter Real gain[6] = ones(6) "gain of axis output";
     Modelica.Blocks.Interfaces.RealOutput axes[6]
       annotation (Placement(transformation(extent={{100,50},{120,70}})));
@@ -195,7 +193,8 @@ package InputDevices "Blocks for input devices, such as keyboard, gamecontroller
   block KeyboardInput
     "Keyboard input implementation for interactive simulations"
     extends Modelica_DeviceDrivers.Utilities.Icons.BaseIcon;
-    parameter Modelica.SIunits.Period sampleTime = 0.01 "sample time for input update";
+    parameter Modelica.Units.SI.Period sampleTime=0.01
+      "sample time for input update";
     Modelica.Blocks.Interfaces.BooleanOutput keyUp
       annotation (Placement(transformation(extent={{100,50},{120,70}})));
     Modelica.Blocks.Interfaces.BooleanOutput keyDown
@@ -363,15 +362,11 @@ package InputDevices "Blocks for input devices, such as keyboard, gamecontroller
           Line(points={{0,60},{100,60}}, color={255,0,255}),
           Text(
             extent={{100,-72},{164,-98}},
-            lineColor={95,95,95},
-            fillColor={95,95,95},
-            fillPattern=FillPattern.Solid,
+            textColor={95,95,95},
             textString="space"),
           Text(
             extent={{100,-12},{164,-38}},
-            lineColor={95,95,95},
-            fillColor={95,95,95},
-            fillPattern=FillPattern.Solid,
+            textColor={95,95,95},
             textString="return")}),
               preferredView="info",Documentation(info="<html> This block reads data from the keyboard. The arrow keys, space and return are monitored.
                                        Note, that keystrokes will not be captured and the focused window will process them.
@@ -382,7 +377,7 @@ package InputDevices "Blocks for input devices, such as keyboard, gamecontroller
       extends Modelica.Icons.TypesPackage;
     type keyCodes =  Modelica.Icons.TypeString
     annotation (
-      preferedView="text",
+      preferredView="text",
       Evaluate=true,
       choices(
         choice="0" "0",

@@ -1,7 +1,8 @@
 within Modelica_DeviceDrivers.EmbeddedTargets.STM32F4.Blocks;
 block SynchronizeRealtime "A pseudo realtime synchronization"
   extends .Modelica_DeviceDrivers.Utilities.Icons.STM32F4BlockIcon;
-  import Modelica.SIunits;
+  import SIunits =
+         Modelica.Units.SI;
   import Modelica_DeviceDrivers.EmbeddedTargets.STM32F4.Constants;
   import Modelica_DeviceDrivers.EmbeddedTargets.STM32F4.Types;
   import Modelica_DeviceDrivers.EmbeddedTargets.STM32F4.Functions;
@@ -70,7 +71,7 @@ algorithm
                                                                                   Text(extent={{
               -150,-110},{150,-150}},
           textString="%desiredFrequency Hz",
-          lineColor={0,0,0}),                                                     Text(extent={{
+          textColor={0,0,0}),                                                     Text(extent={{
               -152,144},{148,104}},
             textString="%name")},                                                                                                            coordinateSystem(initialScale = 0.1)));
 end SynchronizeRealtime;

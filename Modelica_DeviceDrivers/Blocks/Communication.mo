@@ -1,4 +1,4 @@
-within Modelica_DeviceDrivers.Blocks;
+﻿within Modelica_DeviceDrivers.Blocks;
 package Communication "Blocks for communication devices such as network, CAN, shared memory, etc."
     extends Modelica.Icons.Package;
   block SharedMemoryRead
@@ -19,6 +19,8 @@ package Communication "Blocks for communication devices such as network, CAN, sh
       "Buffer size of shared memory partition in bytes (if not deduced automatically)"
       annotation(Dialog(enable=not autoBufferSize, group="Shared memory partition"));
     parameter String memoryID="sharedMemory" "ID of the shared memory buffer" annotation(Dialog(group="Shared memory partition"));
+    parameter Boolean cleanup = true "true, unlink shared memory at process termination, otherwise no unlink ⇒ 'memoryID' can still be opened (Linux specific, otherwise no effect)"
+      annotation(Dialog(group="Shared memory partition"), choices(checkBox=true));
     Interfaces.PackageOut pkgOut(pkg = SerialPackager(if autoBufferSize then bufferSize else userBufferSize), dummy(start=0, fixed=true))
       annotation (Placement(
           transformation(
@@ -26,7 +28,7 @@ package Communication "Blocks for communication devices such as network, CAN, sh
           rotation=90,
           origin={108,0})));
   protected
-    SharedMemory sm = SharedMemory(memoryID, bufferSize);
+    SharedMemory sm = SharedMemory(memoryID, bufferSize, cleanup);
     Integer bufferSize;
   equation
     when initial() then
@@ -63,13 +65,15 @@ provided by the parameter <b>memoryID</b>. If the shared memory partition does n
       "Buffer size of shared memory partition in bytes (if not deduced automatically)"
       annotation(Dialog(enable=not autoBufferSize, group="Shared memory partition"));
     parameter String memoryID="sharedMemory" "ID of the shared memory buffer" annotation(Dialog(group="Shared memory partition"));
+    parameter Boolean cleanup = true "true, unlink shared memory at process termination, otherwise no unlink ⇒ 'memoryID' can still be opened (Linux specific, otherwise no effect)"
+      annotation(Dialog(group="Shared memory partition"), choices(checkBox=true));
     Interfaces.PackageIn pkgIn annotation (Placement(
           transformation(
           extent={{-20,20},{20,-20}},
           rotation=90,
           origin={-108,0})));
   protected
-    SharedMemory sm = SharedMemory(memoryID, if autoBufferSize then bufferSize else userBufferSize);
+    SharedMemory sm = SharedMemory(memoryID, if autoBufferSize then bufferSize else userBufferSize, cleanup);
     Integer bufferSize;
     Real dummy(start=0, fixed=true);
   equation
@@ -308,14 +312,15 @@ provided by the parameter <b>memoryID</b>. If the shared memory partition does n
     parameter Boolean autoBufferSize = true
       "true, buffer size is deduced automatically, otherwise set it manually"
       annotation(Dialog(group="Incoming data"), choices(checkBox=true));
-    parameter Integer userBufferSize=16*64
-      "Buffer size of message data in bytes (if not deduced automatically)" annotation(Dialog(enable=not autoBufferSize, group="Incoming data"));
-    parameter String Serial_Port="/dev/ttyPS1" "Serial port to send data"
-     annotation (Dialog(group="Incoming data"));
+    parameter Integer userBufferSize=16*64 "Buffer size of message data in bytes (if not deduced automatically)"
+      annotation(Dialog(enable=not autoBufferSize, group="Incoming data"));
+    parameter String Serial_Port = "/dev/ttyPS1" "Serial port to receive data from"
+      annotation (Dialog(group="Incoming data"));
     parameter SerialBaudRate baud= SerialBaudRate.B9600 "Serial port baud rate"
-    annotation (Dialog(group="Incoming data"));
-    parameter Integer parity = 0
-      "set parity (0 - no parity, 1 - even, 2 - odd)"
+      annotation (Dialog(group="Incoming data"));
+    parameter Integer parity = 0 "set parity (0 - no parity, 1 - even, 2 - odd)"
+      annotation (Dialog(group="Outgoing data"));
+    parameter Integer byteSize(min=5, max=8) = 8 "Number of data bits transmitted per (serial data format) byte (8 is most common)"
       annotation (Dialog(group="Outgoing data"));
     Interfaces.PackageOut pkgOut(pkg = SerialPackager(if autoBufferSize then bufferSize else userBufferSize), dummy(start=0, fixed=true))
       annotation (Placement(transformation(
@@ -325,7 +330,7 @@ provided by the parameter <b>memoryID</b>. If the shared memory partition does n
 
   protected
     Integer bufferSize;
-    SerialPort sPort = SerialPort(Serial_Port, if autoBufferSize then bufferSize else userBufferSize, parity, receiver, baud);
+    SerialPort sPort = SerialPort(Serial_Port, if autoBufferSize then bufferSize else userBufferSize, parity, receiver, baud, byteSize);
     parameter Integer receiver = 1 "Set to be a receiver port";
 
   equation
@@ -366,16 +371,16 @@ See <a href=\"modelica://Modelica_DeviceDrivers.Blocks.Examples.TestSerialPackag
     parameter Boolean autoBufferSize = true
       "true, buffer size is deduced automatically, otherwise set it manually."
       annotation(Dialog(group="Outgoing data"), choices(checkBox=true));
-    parameter Integer userBufferSize=16*64
-      "Buffer size of message data in bytes (if not deduced automatically)." annotation(Dialog(enable=not autoBufferSize, group="Outgoing data"));
-    parameter String Serial_Port="/dev/ttyPS0" "SerialPort to sendData"
+    parameter Integer userBufferSize=16*64 "Buffer size of message data in bytes (if not deduced automatically)."
+      annotation(Dialog(enable=not autoBufferSize, group="Outgoing data"));
+    parameter String Serial_Port = "/dev/ttyPS0" "SerialPort to send data"
       annotation (Dialog(group="Outgoing data"));
-    parameter SerialBaudRate baud = SerialBaudRate.B9600
-      "Serial port baud rate"
-       annotation (Dialog(group="Outgoing data"));
-    parameter Integer parity = 0
-      "set parity (0 - no parity, 1 - even, 2 - odd)"
-       annotation (Dialog(group="Outgoing data"));
+    parameter SerialBaudRate baud = SerialBaudRate.B9600 "Serial port baud rate"
+      annotation (Dialog(group="Outgoing data"));
+    parameter Integer parity = 0 "set parity (0 - no parity, 1 - even, 2 - odd)"
+      annotation (Dialog(group="Outgoing data"));
+    parameter Integer byteSize(min=5, max=8) = 8 "Number of data bits transmitted per (serial data format) byte (8 is most common)"
+      annotation (Dialog(group="Outgoing data"));
 
     Interfaces.PackageIn pkgIn annotation (
         Placement(transformation(
@@ -383,7 +388,7 @@ See <a href=\"modelica://Modelica_DeviceDrivers.Blocks.Examples.TestSerialPackag
           rotation=270,
           origin={-108,0})));
   protected
-    SerialPort sPort = SerialPort(Serial_Port, 0, parity, receiver, baud); // Creating port object from device
+    SerialPort sPort = SerialPort(Serial_Port, 0, parity, receiver, baud, byteSize); // Creating port object from device
     Integer bufferSize;
     parameter Integer receiver = 0 "Set to be a sender port";
     Real dummy(start=0, fixed=true);
@@ -874,7 +879,7 @@ See <a href=\"modelica://Modelica_DeviceDrivers.Blocks.Examples.TestSerialPackag
       import Modelica_DeviceDrivers.Communication.SoftingCAN;
       import Modelica_DeviceDrivers.Utilities.Types;
       import Modelica_DeviceDrivers.Packaging.SerialPackager;
-      import SI = Modelica.SIunits;
+      import      Modelica.Units.SI;
       parameter Integer ident(min=0) "Identifier of CAN message (CAN Id)";
       Interfaces.PackageOut pkgOut(pkg = SerialPackager(8), dummy(start=0, fixed=true))
         annotation (Placement(transformation(extent={{-20,-128},{20,-88}})));
@@ -924,7 +929,7 @@ See <a href=\"modelica://Modelica_DeviceDrivers.Blocks.Examples.TestSerialPackag
       import Modelica_DeviceDrivers.Communication.SoftingCAN;
       import Modelica_DeviceDrivers.Packaging.SerialPackager;
       import Modelica_DeviceDrivers.Utilities.Types;
-      import SI = Modelica.SIunits;
+      import      Modelica.Units.SI;
       parameter Integer ident(min=0) "Identifier of CAN message (CAN Id)";
       parameter Integer dlc(min=0,max=8) = 8
         "Data length code (payload of data in bytes, max=8)";
@@ -1452,7 +1457,7 @@ See <a href=\"modelica://Modelica_DeviceDrivers.Blocks.Examples.TestSerialPackag
 
     block PartialSampleTrigger
       "Common code for triggering calls to external I/O devices"
-      import SI = Modelica.SIunits;
+      import      Modelica.Units.SI;
       parameter Boolean enableExternalTrigger = false
         "true, enable external trigger input signal, otherwise use sample time settings below"
         annotation (Dialog(group="Activation"), choices(checkBox=true));
@@ -1492,12 +1497,12 @@ See <a href=\"modelica://Modelica_DeviceDrivers.Blocks.Examples.TestSerialPackag
     Icon(graphics={
           Text(
             extent={{-100,-72},{100,-96}},
-            lineColor={0,0,0},
+            textColor={0,0,0},
             textString="maxClients: %maxClients"),
           Text(extent={{-150,142},{150,102}}, textString="%name"),
           Text(
             extent={{-100,96},{100,72}},
-            lineColor={0,0,0},
+            textColor={0,0,0},
             textString="port: %port")}),
       Documentation(info="<html>
 <p>
@@ -1510,7 +1515,8 @@ TCP/IP server configuration block. This block is supposed to be used as an inner
     "A block for receiving TCP/IP packets stemming from a client that connected to our server"
     extends Modelica_DeviceDrivers.Utilities.Icons.BaseIcon;
     extends Modelica_DeviceDrivers.Utilities.Icons.TCPIPconnection;
-    extends Modelica_DeviceDrivers.Blocks.Communication.Internal.PartialSampleTrigger;
+    extends
+      Modelica_DeviceDrivers.Blocks.Communication.Internal.PartialSampleTrigger;
     import Modelica_DeviceDrivers.Packaging.SerialPackager;
     import Modelica_DeviceDrivers.Packaging.alignAtByteBoundary;
     parameter Integer clientIndex(min=1) = 1 "Index of the TCP/IP client" annotation(Dialog(group="Incoming data"));
@@ -1574,7 +1580,7 @@ TCP/IP server configuration block. This block is supposed to be used as an inner
               textString="%name"),
           Text(
             extent={{-100,100},{100,40}},
-            lineColor={0,0,0},
+            textColor={0,0,0},
             textString="%clientIndex")}),
                                      Documentation(info="<html>
 <p>Supports receiving of TCP/IP packets stemming from a client that connected to our server.</p>
@@ -1585,7 +1591,8 @@ TCP/IP server configuration block. This block is supposed to be used as an inner
     "A block for sending TCP/IP packets to a client that connected to our server."
     extends Modelica_DeviceDrivers.Utilities.Icons.BaseIcon;
     extends Modelica_DeviceDrivers.Utilities.Icons.TCPIPconnection;
-    extends Modelica_DeviceDrivers.Blocks.Communication.Internal.PartialSampleTrigger;
+    extends
+      Modelica_DeviceDrivers.Blocks.Communication.Internal.PartialSampleTrigger;
     import Modelica_DeviceDrivers.Packaging.SerialPackager;
     import Modelica_DeviceDrivers.Packaging.alignAtByteBoundary;
 
@@ -1654,7 +1661,7 @@ TCP/IP server configuration block. This block is supposed to be used as an inner
               textString="%name"),
           Text(
             extent={{-100,100},{100,40}},
-            lineColor={0,0,0},
+            textColor={0,0,0},
             textString="%clientIndex")}),
                                      Documentation(info="<html>
 <p>Supports sending of TCP/IP packets to a client that connected to our server.</p>

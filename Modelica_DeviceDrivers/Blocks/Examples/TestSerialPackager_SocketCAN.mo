@@ -42,8 +42,8 @@ model TestSerialPackager_SocketCAN
   Modelica_DeviceDrivers.Blocks.Packaging.SerialPackager.UnpackUnsignedInteger
     unpackInt2(width=16)
     annotation (Placement(transformation(extent={{20,-52},{40,-32}})));
-Modelica_DeviceDrivers.Blocks.OperatingSystem.SynchronizeRealtime
-  synchronizeRealtime
+Modelica_DeviceDrivers.Blocks.OperatingSystem.RealtimeSynchronize
+  realtimeSynchronize
   annotation (Placement(transformation(extent={{60,40},{80,60}})));
 equation
   connect(integerExpression1.y,addInteger.u[1]) annotation (Line(
@@ -75,7 +75,7 @@ annotation (Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-100,
             -100},{100,100}}),
                     graphics={Text(
           extent={{-94,92},{96,64}},
-          lineColor={0,0,255},
+          textColor={0,0,255},
           textString="Please see documentation for system requirements
 for using the Linux Socket CAN bus interface!")}),
                                experiment(StopTime=1.0), Documentation(info="<html>

@@ -5,7 +5,7 @@
  * @author      bernhard-thiele
  * @author      tbeu
  * @since       2012-05-29
- * @copyright see Modelica_DeviceDrivers project's License.txt file
+ * @copyright see accompanying file LICENSE_Modelica_DeviceDrivers.txt
  */
 
 #ifndef MDDREALTIMESYNCHRONIZE_H_
@@ -505,6 +505,16 @@ DllExport void MDD_RTSyncSynchronize(void * rtSyncObj, double simTime, double sc
 
 #elif defined(__linux__)
 
+/* Make CLOCK_MONOTONIC available if compiled with flag -std=c89, e.g., g++ -x c -std=c89 -m64 -fPIC -c MDDRealtimeSynchronize.h
+ * https://github.com/modelica-3rdparty/Modelica_DeviceDrivers/issues/383
+ * hack(bernhard-thiele): After some experiments with gcc and clang and different flags (e.g., -std=gnu99 or without specifying -std),
+ *                        below seems to work robustly for a range of flags. (Probably can be improved, just don't know how...)
+ */
+#if !defined(linux) && !defined(unix) && !defined(_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE 199309L
+#endif
+
+
 #include <time.h>
 #include <sched.h>
 #include <math.h>
@@ -798,15 +808,15 @@ DllExport double MDD_sampledRealtimeSynchronize(void* rtSyncObj, double simTime,
         /* get value the current time of the real-time clock (should be equal to t_abs if everything is OK) */
         clock_gettime(CLOCK_MONOTONIC, &rtSync->t_clockRealtime);
         rtSync->lastSimTime = simTime;
-        rtSync->lastSyncTime = syncTime; // TODO: Implement
+        rtSync->lastSyncTime = syncTime; /* TODO: Implement */
 
 
         /* wall clock time since start */
         struct timespec t_elapsed;
-        // FIXME: Introduce a tmp (pseudo code struct timespec t_tmp = rtSync->t_start) for doing the carry?;
+        /* FIXME: Introduce a tmp (pseudo code struct timespec t_tmp = rtSync->t_start) for doing the carry?; */
         ret = timespec_subtract(&t_elapsed, &(rtSync->t_clockRealtime), &(rtSync->t_start));
         if (ret == 1) {
-            ModelicaFormatError("MDDRealtimeSynchronize.h: timespec_subtract returned negative number\n");
+            ModelicaError("MDDRealtimeSynchronize.h: timespec_subtract returned negative number\n");
         }
         *wallClockTime = (double)t_elapsed.tv_sec + (double)t_elapsed.tv_nsec/NSEC_PER_SEC;
     }
@@ -814,18 +824,14 @@ DllExport double MDD_sampledRealtimeSynchronize(void* rtSyncObj, double simTime,
     return deltaTime;
 }
 
-double MDD_getTimeMS(double dummy) {
+DllExport double MDD_getTimeMS(double dummy) {
     struct timespec ts;
-    int ret, ms;
-
-    ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+    int ret = clock_gettime(CLOCK_MONOTONIC, &ts);
     if (ret) {
         ModelicaFormatError("MDDRealtimeSynchronize.h: clock_gettime failed (%s)\n", strerror(errno));
     }
-
-    ms = ts.tv_sec*1000 + floor( (double)ts.tv_nsec/1000.0 + 0.5);
-
-    return (double)ms;
+    double epoch_ms = (double)ts.tv_sec*1000.0 + floor( (double)ts.tv_nsec/1e6 + 0.5);
+    return epoch_ms;
 }
 
 /******************************************************/
@@ -891,6 +897,7 @@ DllExport void MDD_RTSyncSynchronize(void * rtSyncObj, double simTime, double sc
     struct timespec t_now;
     struct timespec t_elapsed;
     struct timespec t_abs; /* Absolute time until which execution will be delayed (to catch up with real-time) */
+    struct timespec t_subtrahend_might_be_modified_for_carry; /* TODO consider changing `timespec_subtract(...)` for less surprising code */
     double samplingPeriod = 0, fractpart = 0, intpart = 0;
     int ret = 0;
 
@@ -925,7 +932,8 @@ DllExport void MDD_RTSyncSynchronize(void * rtSyncObj, double simTime, double sc
         }
 
         /* Determine computation time */
-        ret = timespec_subtract(&t_elapsed, &t_now, &rtSync->t_last);
+        t_subtrahend_might_be_modified_for_carry = rtSync->t_last;
+        ret = timespec_subtract(&t_elapsed, &t_now, &t_subtrahend_might_be_modified_for_carry);
         if (ret) {
             ModelicaError("MDDRealtimeSynchronize.h: Uups, negative computing time?!\n");
         }
@@ -954,12 +962,12 @@ DllExport void MDD_RTSyncSynchronize(void * rtSyncObj, double simTime, double sc
         }
 
         *remainingTime = ( t_abs.tv_sec - t_now.tv_sec )
-                         + ((double)t_abs.tv_nsec - (double)t_now.tv_nsec)/NSEC_PER_SEC;
+                         + (double)(t_abs.tv_nsec - t_now.tv_nsec)/NSEC_PER_SEC;
 
         /* wait until (scaled) simulation time == real-time */
         ret = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t_abs, NULL);
         if (ret) {
-            ModelicaError("MDDRealtimeSynchronize.h: clock_nanosleep(..) failed\n");
+            ModelicaFormatError("MDDRealtimeSynchronize.h: clock_nanosleep(..) failed\n");
         }
 
         /* get value the current time of the real-time clock (should be equal to t_abs if everything is OK) */
@@ -967,7 +975,8 @@ DllExport void MDD_RTSyncSynchronize(void * rtSyncObj, double simTime, double sc
         rtSync->lastSimTime = simTime;
 
         /* wall clock time since start */
-        ret = timespec_subtract(&t_elapsed, &(rtSync->t_last), &(rtSync->t_start));
+        t_subtrahend_might_be_modified_for_carry = rtSync->t_start;
+        ret = timespec_subtract(&t_elapsed, &(rtSync->t_last), &t_subtrahend_might_be_modified_for_carry);
         if (ret == 1) {
             ModelicaFormatError("MDDRealtimeSynchronize.h: timespec_subtract returned negative number\n");
         }

@@ -4,7 +4,7 @@
  * @author      bernhard-thiele
  * @author      tbeu
  * @since       2012-07-10
- * @copyright see Modelica_DeviceDrivers project's License.txt file
+ * @copyright see accompanying file LICENSE_Modelica_DeviceDrivers.txt
  *
  * The first version of the packager ("MinimalSerialPackager") was written by tbellmann.
  *
@@ -435,12 +435,11 @@ DllExport void MDD_SerialPackagerGetFloatAsDouble(void* p_package, double * y, i
  * If p_package->bitOffset != 0 the value is aligned to the next byte boundary,
  * i.e., p_package->bitOffset set to 0 and p_package->pos++.
  * @param[in,out] p_package pointer to the SerialPackager
- * @param[in] u zero terminated string
- * @param[in] bufferSize that was reserved for that string
+ * @param[in] u null terminated string
+ * @param[in] bufferSize buffer size that was reserved for that string
  */
 DllExport void MDD_SerialPackagerAddString(void* p_package, const char* u, int bufferSize) {
     SerialPackager* pkg = (SerialPackager*) p_package;
-    /* unsigned int size = (strlen(u)+1)*sizeof(char); */
 
     if (pkg->bitOffset != 0) {
         MDD_SerialPackagerAlignToByteBoundary(pkg);
@@ -450,8 +449,13 @@ DllExport void MDD_SerialPackagerAddString(void* p_package, const char* u, int b
                               pkg->size, pkg->pos+bufferSize, bufferSize, (unsigned long)strlen(u));
         ModelicaError("MDDSerialPackager.h: MDD_SerialPackagerAddString failed. Buffer overflow.\n");
     }
-    memcpy(pkg->data + pkg->pos, u, bufferSize);
+    strncpy(pkg->data + pkg->pos, u, (size_t)bufferSize);
     pkg->pos += bufferSize;
+    if (pkg->data[pkg->pos - 1] != '\0') {
+        pkg->data[pkg->pos - 1] = '\0'; /* ensure null terminated data */
+        ModelicaFormatWarning("MDDSerialPackager.h: MDD_SerialPackagerAddString warning. No terminating '\\0' found in "
+                              "buffer of bufferSize: %d\n", bufferSize);
+    }
 }
 
 /** Get string from current byte position.
@@ -459,12 +463,12 @@ DllExport void MDD_SerialPackagerAddString(void* p_package, const char* u, int b
  * If p_package->bitOffset != 0 the value is aligned to the next byte boundary,
  * i.e., p_package->bitOffset set to 0 and p_package->pos++.
  * @param[in,out] p_package pointer to the SerialPackager
- * @param[in] bufferSize that was reserved for that string
- * @return Extracted String value (null-terminated)
+ * @param[in] bufferSize buffer size that was reserved for that string
+ * @return Extracted String value (null terminated)
  */
 DllExport const char* MDD_SerialPackagerGetString(void* p_package, int bufferSize) {
     SerialPackager* pkg = (SerialPackager*) p_package;
-    unsigned int i, found = 0;
+    unsigned char* pNull;
     if (pkg->bitOffset != 0) {
         MDD_SerialPackagerAlignToByteBoundary(pkg);
     }
@@ -473,20 +477,21 @@ DllExport const char* MDD_SerialPackagerGetString(void* p_package, int bufferSiz
         ModelicaError("MDDSerialPackager.h: MDD_SerialPackagerGetString failed. Buffer overflow.\n");
     }
 
-    for (i=pkg->pos; i < pkg->pos + bufferSize; i++) {
-        if (pkg->data[i] == '\0') {
-            found = 1;
-            break;
+    pNull = (unsigned char*)memchr(pkg->data + pkg->pos, '\0', (size_t)bufferSize);
+    if (pNull == NULL) {
+        char* y = ModelicaAllocateString(bufferSize);
+        if (y) {
+            memcpy(y, pkg->data + pkg->pos, (size_t)bufferSize);
+            y[bufferSize] = '\0'; /* ensure null terminated data */
         }
-    }
-
-    if (!found) {
-        ModelicaError("MDDSerialPackager.h: MDD_SerialPackagerGetString failed. No terminating '\\0' found in buffer\n");
+        pkg->pos += bufferSize;
+        ModelicaFormatWarning("MDDSerialPackager.h: MDD_SerialPackagerGetString warning. No terminating '\\0' found in "
+                              "buffer of bufferSize: %d\n", bufferSize);
     }
     else {
-        char* y = ModelicaAllocateString(i - pkg->pos);
+        char* y = ModelicaAllocateString(pNull - pkg->data - pkg->pos);
         if (y) {
-            memcpy(y, &(pkg->data[ pkg->pos ]), i - pkg->pos + 1); // +1 for the trailing '\0'
+            memcpy(y, pkg->data + pkg->pos, pNull - pkg->data - pkg->pos + 1); /* +1 for the trailing '\0' */
         }
         pkg->pos += bufferSize;
         return (const char*) y;

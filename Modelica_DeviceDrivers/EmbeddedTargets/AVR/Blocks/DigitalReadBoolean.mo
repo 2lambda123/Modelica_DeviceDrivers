@@ -3,7 +3,8 @@ model DigitalReadBoolean
   extends .Modelica.Blocks.Interfaces.partialBooleanSO;
   import Modelica_DeviceDrivers.EmbeddedTargets.AVR.Functions;
   import Modelica_DeviceDrivers.EmbeddedTargets.AVR.Types;
-  import Modelica.SIunits;
+  import SIunits =
+         Modelica.Units.SI;
   constant Types.Port port annotation(Dialog(
     enable = true,
     tab = "General",
@@ -16,5 +17,5 @@ protected
   Functions.Digital.InitRead digital = Functions.Digital.InitRead(port, pin);
 algorithm
   y := Functions.Digital.read(digital, pin);
-annotation(Icon(graphics = {Text(extent = {{-95, -95}, {95, 95}}, textString = "Digital %port%pin", fontName = "Arial")}));
+annotation(Icon(graphics={  Text(extent = {{-95, -95}, {95, 95}}, textString = "Digital %port%pin", fontName = "Arial")}));
 end DigitalReadBoolean;

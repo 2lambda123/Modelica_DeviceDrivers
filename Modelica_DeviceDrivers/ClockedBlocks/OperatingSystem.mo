@@ -47,8 +47,9 @@ package OperatingSystem
     Modelica.Blocks.Interfaces.RealInput scaling if enableRealTimeScaling
       "Real-time scaling factor; > 1 means the simulation is made slower than real-time"
       annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
-    output Modelica.SIunits.Time calculationTime "Time needed for calculation";
-    output Modelica.SIunits.Time availableTime "Time available for calculation (integrator step size)";
+    output Modelica.Units.SI.Time calculationTime "Time needed for calculation";
+    output Modelica.Units.SI.Time availableTime
+      "Time available for calculation (integrator step size)";
   protected
     ProcessPriority procPrio(priority = priority) if setPriority;
     Modelica.Blocks.Interfaces.BooleanInput initialized;
@@ -147,17 +148,15 @@ package OperatingSystem
             pattern=LinePattern.Dash),
           Text(
             extent={{-100,62},{-72,46}},
-            lineColor={135,135,135},
-            pattern=LinePattern.Dash,
+            textColor={135,135,135},
             textString="max"),
           Text(
             extent={{-100,-44},{-72,-60}},
-            lineColor={135,135,135},
-            pattern=LinePattern.Dash,
+            textColor={135,135,135},
             textString="min"),
           Text(
             extent={{-100,140},{100,100}},
-            lineColor={0,0,255},
+            textColor={0,0,255},
             textString="%name")}),
       Documentation(info="<html>
 <p>Uses the <code>rand()</code>function from the C standard library for creating pseudo-random numbers. The computers real-time clock is used to obtain seed values for the sequence of pseudo-random numbers.</p>

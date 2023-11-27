@@ -9,8 +9,8 @@ Modelica_DeviceDrivers.Blocks.Communication.SoftingCAN.SoftingCANConfig
 Modelica_DeviceDrivers.Blocks.Communication.SoftingCAN.SoftingReadMessage
   rxMessage(ident=101)
   annotation (Placement(transformation(extent={{12,20},{32,40}})));
-Modelica_DeviceDrivers.Blocks.OperatingSystem.SynchronizeRealtime
-  synchronizeRealtime
+Modelica_DeviceDrivers.Blocks.OperatingSystem.RealtimeSynchronize
+  realtimeSynchronize
   annotation (Placement(transformation(extent={{40,32},{60,52}})));
 Modelica_DeviceDrivers.Blocks.Packaging.SerialPackager.UnpackUnsignedInteger
                                                                    unpackInt(
@@ -118,7 +118,7 @@ annotation (Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-100,
             -100},{100,100}}),
                     graphics={Text(
           extent={{-94,92},{96,64}},
-          lineColor={0,0,255},
+          textColor={0,0,255},
           textString="Please see documentation for system requirements
 for using the Softing CAN bus interface!")}),
                                experiment(StopTime=1.0), Documentation(info="<html>
